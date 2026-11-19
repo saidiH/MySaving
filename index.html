@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coin Goal Tracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Comic Sans MS", "Segoe UI", Verdana, sans-serif;
+    background: linear-gradient(180deg, #ffe6f0 0%, #fff7d6 50%, #e0f7ff 100%);
+    min-height: 100vh;
+    color: #3a2e5f;
+    padding: 20px 12px 60px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header {
+    text-align: center;
+    background: #ffb703;
+    border-radius: 28px;
+    padding: 24px 16px;
+    margin-bottom: 22px;
+    box-shadow: 0 6px 0 #e58e00;
+  }
+  header h1 { font-size: 2rem; color: #fff; text-shadow: 2px 2px 0 #e58e00; }
+  header p { color: #6b4a00; margin-top: 6px; font-size: 1rem; }
+  section.card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 6px 14px rgba(58,46,95,0.15);
+  }
+  section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  section .hint { color: #8a7fb0; font-size: 0.9rem; margin-bottom: 14px; }
+  label { display: block; font-weight: bold; margin: 10px 0 4px; font-size: 0.95rem; }
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #d9d0f0;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: #faf8ff;
+    outline: none;
+  }
+  input:focus, select:focus { border-color: #8338ec; }
+  button {
+    border: none;
+    border-radius: 999px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    color: #fff;
+    margin-top: 14px;
+  }
+  button:hover { filter: brightness(1.08); }
+  .btn-goal { background: #ff5d8f; box-shadow: 0 4px 0 #d63e6e; }
+  .btn-plan { background: #3a86ff; box-shadow: 0 4px 0 #2a5fc4; }
+  .btn-add { background: #06d6a0; box-shadow: 0 4px 0 #04a878; }
+  .goal-box {
+    background: #fff0f5;
+    border: 3px dashed #ff5d8f;
+    border-radius: 18px;
+    padding: 16px;
+    margin-top: 16px;
+    text-align: center;
+  }
+  .goal-box .emoji { font-size: 2.4rem; }
+  .goal-box .gname { font-size: 1.4rem; font-weight: bold; color: #d63e6e; }
+  .goal-box .gtarget { font-size: 1.1rem; margin-top: 4px; }
+  .goal-box .gnote { color: #8a6270; font-size: 0.9rem; margin-top: 6px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 130px; }
+  .plan-summary {
+    background: #eaf3ff;
+    border-radius: 18px;
+    padding: 16px;
+    margin-top: 16px;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+  .plan-summary strong { color: #2a5fc4; }
+  .entries { margin-top: 14px; }
+  .entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f2fff9;
+    border: 2px solid #b8f0dc;
+    border-radius: 14px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+  }
+  .entry .amt { font-weight: bold; color: #04a878; }
+  .entry .date { color: #8a7fb0; font-size: 0.85rem; }
+  .entry .lbl { flex: 1; padding: 0 10px; }
+  .progress-shell {
+    background: #ece4fa;
+    border-radius: 999px;
+    height: 30px;
+    margin-top: 16px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #06d6a0, #3a86ff);
+    border-radius: 999px;
+    transition: width 0.6s ease;
+  }
+  .progress-text { margin-top: 10px; text-align: center; font-size: 1.05rem; }
+  .progress-text strong { color: #04a878; font-size: 1.2rem; }
+  .totals { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+  .total-card {
+    flex: 1;
+    min-width: 140px;
+    background: #f6f2ff;
+    border-radius: 16px;
+    padding: 12px;
+    text-align: center;
+  }
+  .total-card .num { font-size: 1.3rem; font-weight: bold; color: #8338ec; }
+  .total-card .cap { font-size: 0.8rem; color: #8a7fb0; }
+  .msg {
+    margin-top: 12px;
+    text-align: center;
+    font-weight: bold;
+    min-height: 1.4em;
+    color: #d63e6e;
+  }
+  footer { text-align: center; color: #8a7fb0; font-size: 0.85rem; margin-top: 8px; }
+  .road-scene-wrap {
+    background: #fff8e6;
+    border: 3px dashed #ffb703;
+    border-radius: 18px;
+    padding: 12px;
+    margin-top: 18px;
+  }
+  #roadScene { width: 100%; height: auto; display: block; border-radius: 12px; }
+  .road-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .road-controls button { margin-top: 0; white-space: nowrap; }
+  #walkSlider { flex: 1; min-width: 140px; accent-color: #ff5d8f; cursor: pointer; }
+  .walk-day {
+    font-weight: bold;
+    color: #b25e00;
+    background: #fff;
+    border-radius: 999px;
+    padding: 6px 14px;
+    white-space: nowrap;
+  }
+  .walk-info {
+    margin-top: 8px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #6b4a00;
+    min-height: 1.4em;
+  }
+  .finish-banner {
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%,-50%) scale(0.4);
+    background: #fff;
+    border: 4px solid #ffd94d;
+    border-radius: 22px;
+    padding: 18px 28px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #b25e00;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(.2,1.6,.4,1);
+    z-index: 5;
+  }
+  .finish-banner.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  @keyframes coinPop {
+    0% { transform: scale(0); }
+    60% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+  }
+  .coin-pop { animation: coinPop 0.5s ease both; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🪙 Coin Goal Tracker</h1>
+    <p>Save your pocket money, one coin at a time!</p>
+  </header>
+
+  <!-- SECTION 1: GOAL -->
+  <section class="card" id="goal-section">
+    <h2>🎯 My Goal</h2>
+    <p class="hint">What do you want to save for? Pick your goal here.</p>
+    <div class="row">
+      <div>
+        <label for="goalName">Goal name</label>
+        <input id="goalName" type="text" placeholder="e.g. LEGO set">
+      </div>
+      <div>
+        <label for="goalTarget">Target amount (RM)</label>
+        <input id="goalTarget" type="number" min="1" placeholder="e.g. 150">
+      </div>
+    </div>
+    <label for="goalNote">Little note about it</label>
+    <input id="goalNote" type="text" placeholder="e.g. The big spaceship one from the toy shop">
+    <button class="btn-goal" id="btnSetGoal">Set My Goal 🎯</button>
+    <div class="goal-box">
+      <div class="emoji" id="goalEmoji">🚀</div>
+      <div class="gname" id="showName">LEGO Spaceship Set</div>
+      <div class="gtarget" id="showTarget">Target: RM 150</div>
+      <div class="gnote" id="showNote">The big spaceship one from Toys "R" Us in Mid Valley</div>
+    </div>
+    <div class="msg" id="goalMsg"></div>
+  </section>
+
+  <!-- SECTION 2: SAVING PLAN -->
+  <section class="card" id="plan-section">
+    <h2>📅 My Saving Plan</h2>
+    <p class="hint">How much can you save? We'll guess how long it will take.</p>
+    <div class="row">
+      <div>
+        <label for="planAmount">I can save (RM)</label>
+        <input id="planAmount" type="number" min="1" placeholder="e.g. 5">
+      </div>
+      <div>
+        <label for="planEvery">Every…</label>
+        <select id="planEvery">
+          <option value="day">Day 🌞</option>
+          <option value="week" selected>Week 📆</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="bonusAmount">🎁 Extra money from you (one-time)</label>
+        <input id="bonusAmount" type="number" min="0" placeholder="e.g. 20">
+      </div>
+    </div>
+    <button class="btn-plan" id="btnShowPlan">Show My Plan 📅</button>
+    <div class="plan-summary" id="planSummary">
+      Save <strong>RM 5 every week</strong> for your goal <strong>LEGO Spaceship Set (RM 150)</strong>
+      and you could reach it in about <strong>30 weeks</strong>! 🎉
+    </div>
+  </section>
+
+  <!-- SECTION 3: PROGRESS -->
+  <section class="card" id="progress-section">
+    <h2>💰 My Progress</h2>
+    <p class="hint">Every coin you add brings you closer to your goal!</p>
+    <div class="totals">
+      <div class="total-card">
+        <div class="num" id="totalSaved">RM 40</div>
+        <div class="cap">Total saved</div>
+      </div>
+      <div class="total-card">
+        <div class="num" id="percentSaved">27%</div>
+        <div class="cap">Of my goal</div>
+      </div>
+      <div class="total-card">
+        <div class="num" id="remaining">RM 110</div>
+        <div class="cap">Still to go</div>
+      </div>
+    </div>
+    <div class="progress-shell">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">
+      You saved <strong>RM 40</strong> out of <strong>RM 150</strong> — keep going! 💪
+    </div>
+    <div class="entries" id="entries"></div>
+    <div class="row" style="align-items:flex-end">
+      <div>
+        <label for="addLabel">Where did it come from?</label>
+        <input id="addLabel" type="text" placeholder="e.g. Duit raya, pocket money">
+      </div>
+      <div style="max-width:160px">
+        <label for="addAmount">Add (RM)</label>
+        <input id="addAmount" type="number" min="0.5" placeholder="e.g. 5">
+      </div>
+    </div>
+    <button class="btn-add" id="btnAdd">Add Savings 💰</button>
+    <button class="btn-plan" id="btnRoadmap" style="margin-left:8px">Show Road Map 🗺️</button>
+    <div class="msg" id="addMsg"></div>
+    <div class="roadmap" id="roadmap" hidden>
+      <h3>🗺️ My Road Map — walk to the goal!</h3>
+      <p class="hint" id="roadmapIntro"></p>
+      <div class="road-scene-wrap">
+        <svg id="roadScene" viewBox="0 0 760 430" role="img" aria-label="Animated road map of the saving journey">
+          <defs>
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#aee3ff"/>
+              <stop offset="100%" stop-color="#e6f7ff"/>
+            </linearGradient>
+            <linearGradient id="roadGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#9aa0b5"/>
+              <stop offset="100%" stop-color="#7d8398"/>
+            </linearGradient>
+          </defs>
+          <!-- sky & ground -->
+          <rect x="0" y="0" width="760" height="430" fill="url(#skyGrad)"/>
+          <circle cx="680" cy="60" r="34" fill="#ffd94d"/>
+          <circle cx="680" cy="60" r="42" fill="#ffd94d" opacity="0.3"/>
+          <ellipse cx="150" cy="55" rx="46" ry="16" fill="#ffffff" opacity="0.9"/>
+          <ellipse cx="190" cy="45" rx="34" ry="13" fill="#ffffff" opacity="0.9"/>
+          <ellipse cx="420" cy="80" rx="52" ry="15" fill="#ffffff" opacity="0.8"/>
+          <rect x="0" y="240" width="760" height="190" fill="#bfe8a0"/>
+          <rect x="0" y="236" width="760" height="8" fill="#a8d98a"/>
+          <!-- scenery -->
+          <g id="trees"></g>
+          <!-- winding road -->
+          <path d="M 40 380 C 150 380, 170 300, 280 300 C 390 300, 380 230, 480 220 C 590 210, 590 140, 700 120"
+                fill="none" stroke="#5c6270" stroke-width="46" stroke-linecap="round"/>
+          <path d="M 40 380 C 150 380, 170 300, 280 300 C 390 300, 380 230, 480 220 C 590 210, 590 140, 700 120"
+                fill="none" stroke="url(#roadGrad)" stroke-width="40" stroke-linecap="round"/>
+          <path id="roadPath" d="M 40 380 C 150 380, 170 300, 280 300 C 390 300, 380 230, 480 220 C 590 210, 590 140, 700 120"
+                fill="none" stroke="#ffffff" stroke-width="3" stroke-dasharray="14 16" stroke-linecap="round" opacity="0.9"/>
+          <!-- start & finish -->
+          <g id="startFlag">
+            <rect x="26" y="316" width="5" height="52" fill="#8a5a2b"/>
+            <path d="M 31 318 L 65 328 L 31 340 Z" fill="#ff5d8f"/>
+          </g>
+          <g id="finishArea"></g>
+          <!-- coin milestones -->
+          <g id="coins"></g>
+          <!-- girl avatar -->
+          <g id="girl">
+            <g id="girlBody">
+              <ellipse id="girlShadow" cx="0" cy="26" rx="16" ry="4" fill="#000" opacity="0.15"/>
+              <!-- legs -->
+              <rect id="legL" x="-6" y="14" width="5" height="12" rx="2.5" fill="#8a5a3b"/>
+              <rect id="legR" x="2" y="14" width="5" height="12" rx="2.5" fill="#8a5a3b"/>
+              <!-- dress -->
+              <path d="M -11 -4 L 11 -4 L 16 16 L -16 16 Z" fill="#ff5d8f"/>
+              <path d="M -11 -4 L 11 -4 L 13 2 L -13 2 Z" fill="#ff7fae"/>
+              <!-- arms -->
+              <rect id="armL" x="-16" y="-3" width="4.5" height="14" rx="2.2" fill="#f2b98f"/>
+              <rect id="armR" x="11.5" y="-3" width="4.5" height="14" rx="2.2" fill="#f2b98f"/>
+              <!-- head -->
+              <circle cx="0" cy="-13" r="10" fill="#f2b98f"/>
+              <!-- hair: back + fringe + ponytail -->
+              <path d="M -10.5 -14 A 10.5 10.5 0 0 1 10.5 -14 L 10.5 -10 Q 6 -17 0 -17 Q -6 -17 -10.5 -10 Z" fill="#5a3218"/>
+              <circle cx="11" cy="-9" r="4.5" fill="#5a3218"/>
+              <path d="M 13 -10 Q 20 -6 18 4 Q 15 2 12 -2 Z" fill="#5a3218"/>
+              <circle cx="-5" cy="-12" r="1.3" fill="#3a2e5f"/>
+              <circle cx="5" cy="-12" r="1.3" fill="#3a2e5f"/>
+              <path d="M -4 -7 Q 0 -4.5 4 -7" stroke="#c96a5a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+              <!-- ribbon -->
+              <circle cx="12" cy="-14" r="2.6" fill="#ffd94d"/>
+            </g>
+          </g>
+        </svg>
+        <div class="road-controls">
+          <button class="btn-goal" id="btnWalk">▶️ Start Walking</button>
+          <input id="walkSlider" type="range" min="0" max="100" value="0">
+          <div class="walk-day" id="walkDay">Day 0</div>
+        </div>
+        <div class="walk-info" id="walkInfo">Press ▶️ and she starts walking to the goal! 🚶‍♀️</div>
+        <button class="btn-goal" id="btnCloseRoadmap" style="margin-top:12px">Close ✖️</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>Just for fun — nothing is saved between visits. 🪙</footer>
+</div>
+
+<script>
+(function () {
+  // Starter data (made-up examples, Malaysia flavour). Never opens empty.
+  var state = {
+    goal: {
+      name: "LEGO Spaceship Set",
+      target: 150,
+      note: 'The big spaceship one from Toys "R" Us in Mid Valley',
+      emoji: "🚀"
+    },
+    entries: [
+      { label: "Pocket money from Mom", amount: 10, date: "2 Nov" },
+      { label: "Duit raya from Uncle Azim", amount: 20, date: "9 Nov" },
+      { label: "Helped wash the car", amount: 10, date: "16 Nov" }
+    ]
+  };
+
+  var emojis = ["🚀","🧸","🚲","🎮","📚","⚽","🎨","🦖","🎧","🍭"];
+  function rm(n) {
+    var v = Math.round(n * 100) / 100;
+    return "RM " + (v % 1 === 0 ? v.toFixed(0) : v.toFixed(2));
+  }
+  function $(id) { return document.getElementById(id); }
+
+  function total() {
+    return state.entries.reduce(function (s, e) { return s + e.amount; }, 0);
+  }
+
+  function renderGoal() {
+    $("showName").textContent = state.goal.name;
+    $("showTarget").textContent = "Target: " + rm(state.goal.target);
+    $("showNote").textContent = state.goal.note;
+    $("goalEmoji").textContent = state.goal.emoji;
+  }
+
+  function renderPlan() {
+    var amt = parseFloat($("planAmount").value) || 5;
+    var every = $("planEvery").value;
+    var bonus = parseFloat($("bonusAmount").value) || 0;
+    var perWeek = every === "day" ? amt * 7 : amt;
+    if (perWeek <= 0 || state.goal.target <= 0) return;
+    var left = Math.max(0, state.goal.target - total() - bonus);
+    var weeks = Math.ceil(left / perWeek);
+    var parts = [];
+    if (left <= 0) {
+      $("planSummary").innerHTML =
+        "With the extra " + rm(bonus) + " from you, she has already reached her goal <strong>" +
+        state.goal.name + "</strong>! 🏆🎉";
+      return;
+    }
+    if (weeks >= 8) {
+      var months = Math.round(weeks / 4.3);
+      parts.push("about " + months + " month" + (months === 1 ? "" : "s") + " (" + weeks + " weeks)");
+    } else {
+      parts.push(weeks + " week" + (weeks === 1 ? "" : "s"));
+    }
+    if (every === "day") {
+      parts.push("that's " + (weeks * 7) + " days");
+    }
+    $("planSummary").innerHTML =
+      "Save <strong>" + rm(amt) + " every " + every +
+      "</strong> for your goal <strong>" + state.goal.name + " (" + rm(state.goal.target) + ")</strong>" +
+      " and she could reach it in " + parts.join(" — ") + "! 🎉" +
+      (bonus > 0
+        ? "<br>With the extra <strong>" + rm(bonus) + "</strong> from you, only <strong>" +
+          rm(left) + "</strong> is left to save. 💝"
+        : "");
+  }
+
+  function renderProgress() {
+    var t = total();
+    var target = state.goal.target || 1;
+    var pct = Math.min(100, Math.round((t / target) * 100));
+    $("totalSaved").textContent = rm(t);
+    $("percentSaved").textContent = pct + "%";
+    $("remaining").textContent = rm(Math.max(0, state.goal.target - t));
+    $("progressFill").style.width = pct + "%";
+    var cheer = pct >= 100 ? " — GOAL REACHED! 🏆🎉" : " — keep going! 💪";
+    $("progressText").innerHTML =
+      "You saved <strong>" + rm(t) + "</strong> out of <strong>" +
+      rm(state.goal.target) + "</strong>" + cheer;
+    var list = $("entries");
+    list.innerHTML = "";
+    state.entries.forEach(function (e) {
+      var row = document.createElement("div");
+      row.className = "entry";
+      row.innerHTML =
+        '<span class="date">' + e.date + '</span>' +
+        '<span class="lbl">' + e.label + '</span>' +
+        '<span class="amt">+' + rm(e.amount) + '</span>';
+      list.appendChild(row);
+    });
+  }
+
+  function flash(id, text, ok) {
+    var el = $(id);
+    el.textContent = text;
+    el.style.color = ok ? "#04a878" : "#d63e6e";
+    setTimeout(function () { if (el.textContent === text) el.textContent = ""; }, 3000);
+  }
+
+  $("btnSetGoal").addEventListener("click", function () {
+    var name = $("goalName").value.trim();
+    var target = parseFloat($("goalTarget").value);
+    var note = $("goalNote").value.trim();
+    if (!name) { flash("goalMsg", "Please give your goal a name! 🙈", false); return; }
+    if (!target || target <= 0) { flash("goalMsg", "Please enter a target amount! 💸", false); return; }
+    state.goal.name = name;
+    state.goal.target = target;
+    if (note) state.goal.note = note;
+    state.goal.emoji = emojis[Math.floor(Math.random() * emojis.length)];
+    renderGoal();
+    renderPlan();
+    renderProgress();
+    flash("goalMsg", "Goal updated! 🎯", true);
+  });
+
+  $("btnShowPlan").addEventListener("click", renderPlan);
+  $("planEvery").addEventListener("change", renderPlan);
+  $("planAmount").addEventListener("input", renderPlan);
+  $("bonusAmount").addEventListener("input", renderPlan);
+
+  // ---- Road map animation ----
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var roadPath = null;   // will hold the SVGGeometryElement helpers
+  var walkTimer = null;
+  var walkDay = 0;
+  var totalDays = 0;
+
+  function roadLen() {
+    var p = $("roadPath");
+    return p.getTotalLength();
+  }
+  function roadPoint(dist) {
+    var p = $("roadPath");
+    return p.getPointAtLength(Math.max(0, Math.min(roadLen(), dist)));
+  }
+  function roadAngle(dist) {
+    var e = 4;
+    var a = roadPoint(dist - e), b = roadPoint(dist + e);
+    return Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+  }
+
+  function buildRoadmap() {
+    var amt = parseFloat($("planAmount").value) || 5;
+    var every = $("planEvery").value;
+    var perDay = every === "day" ? amt : amt / 7;
+    if (perDay <= 0 || state.goal.target <= 0) return;
+    var left = Math.max(0, state.goal.target - total());
+    totalDays = left > 0 ? Math.max(1, Math.ceil(left / perDay)) : 0;
+
+    var intro = $("roadmapIntro");
+    if (totalDays === 0) {
+      intro.innerHTML = "She has already reached her goal — enjoy the trophy! 🏆";
+    } else {
+      intro.innerHTML = "Saving <strong>" + rm(amt) + " every " + every + "</strong> (" +
+        rm(perDay) + " per day), she needs <strong>" + totalDays + " days</strong> to reach <strong>" +
+        state.goal.name + "</strong>. Walk with her along the road! 🚶‍♀️";
+    }
+
+    // scenery: trees & flowers scattered off-road
+    var trees = $("trees");
+    trees.innerHTML = "";
+    var spots = [[70,255,1],[130,285,0.8],[210,255,0.9],[330,268,0.8],[430,182,0.85],[560,175,0.9],[620,105,0.8],[710,180,0.85],[60,330,0.7],[740,300,0.75]];
+    spots.forEach(function (s) {
+      var g = document.createElementNS(SVGNS, "g");
+      g.setAttribute("transform", "translate(" + s[0] + "," + s[1] + ") scale(" + s[2] + ")");
+      g.innerHTML =
+        '<rect x="-2.5" y="-4" width="5" height="16" rx="2" fill="#8a5a2b"/>' +
+        '<circle cx="0" cy="-14" r="13" fill="#57a05a"/>' +
+        '<circle cx="-9" cy="-7" r="9" fill="#6abf6e"/>' +
+        '<circle cx="9" cy="-7" r="9" fill="#4c9350"/>';
+      trees.appendChild(g);
+    });
+    // finish: trophy + goal sign at road end
+    var finish = $("finishArea");
+    finish.innerHTML = "";
+    var fg = document.createElementNS(SVGNS, "g");
+    fg.setAttribute("transform", "translate(700,120)");
+    fg.innerHTML =
+      '<rect x="-26" y="8" width="52" height="26" rx="6" fill="#fff" stroke="#ff5d8f" stroke-width="2.5"/>' +
+      '<text x="0" y="26" text-anchor="middle" font-size="13" font-weight="bold" fill="#d63e6e">🏆 GOAL</text>' +
+      '<text x="0" y="-30" text-anchor="middle" font-size="30">🏆</text>';
+    finish.appendChild(fg);
+
+    // coin milestones: one coin per week (or every 10 days for long journeys)
+    var coins = $("coins");
+    coins.innerHTML = "";
+    var step = Math.max(1, Math.round((totalDays > 100 ? 10 : 7)));
+    for (var d = step; d <= totalDays; d += step) {
+      var frac = d / totalDays;
+      var pt = roadPoint(frac * roadLen());
+      var c = document.createElementNS(SVGNS, "g");
+      c.setAttribute("class", "coin");
+      c.setAttribute("transform", "translate(" + pt.x.toFixed(1) + "," + (pt.y - 26).toFixed(1) + ")");
+      c.dataset.day = d;
+      c.innerHTML =
+        '<ellipse cx="0" cy="4" rx="9" ry="2.5" fill="#000" opacity="0.12"/>' +
+        '<circle r="9" fill="#ffd94d" stroke="#e0a800" stroke-width="2"/>' +
+        '<text y="4" text-anchor="middle" font-size="9" font-weight="bold" fill="#a06e00">$</text>';
+      coins.appendChild(c);
+    }
+
+    // slider & walk state
+    var slider = $("walkSlider");
+    slider.max = totalDays;
+    slider.value = 0;
+    stopWalking();
+    walkDay = 0;
+    updateWalk(0);
+    $("roadmap").hidden = false;
+    $("roadmap").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function updateWalk(day) {
+    walkDay = day;
+    var frac = totalDays > 0 ? day / totalDays : 1;
+    var dist = frac * roadLen();
+    var pt = roadPoint(dist);
+    var ang = roadAngle(dist);
+    var girl = $("girl");
+    girl.setAttribute("transform", "translate(" + pt.x.toFixed(1) + "," + pt.y.toFixed(1) + ")");
+    $("girlBody").setAttribute("transform", "rotate(" + ang.toFixed(1) + ")");
+    // animate legs & arms while walking
+    var swing = Math.sin(day * 3.1) * 22;
+    $("legL").setAttribute("transform", "rotate(" + swing + " -3.5 14)");
+    $("legR").setAttribute("transform", "rotate(" + (-swing) + " 4.5 14)");
+    $("armL").setAttribute("transform", "rotate(" + (-swing) + " -13.75 -3)");
+    $("armR").setAttribute("transform", "rotate(" + swing + " 13.75 -3)");
+    $("walkSlider").value = day;
+    $("walkDay").textContent = "Day " + day;
+    var savedNow = Math.min(state.goal.target, total() + Math.round((state.goal.target - total()) * frac * 100) / 100);
+    var popCoin = null;
+    document.querySelectorAll("#coins .coin").forEach(function (c) {
+      var d = parseInt(c.dataset.day, 10);
+      if (d <= day) {
+        c.style.opacity = "0.35";
+        if (!popCoin || d > parseInt(popCoin.dataset.day, 10)) popCoin = c;
+      } else {
+        c.style.opacity = "1";
+      }
+    });
+    var info = $("walkInfo");
+    if (totalDays === 0) {
+      info.innerHTML = "Goal already reached! 🏆🎉";
+    } else if (day >= totalDays) {
+      info.innerHTML = "🎉 She reached <strong>" + state.goal.name + "</strong>! Saved <strong>" +
+        rm(state.goal.target) + "</strong> in <strong>" + totalDays + " days</strong>! 🏆";
+    } else {
+      info.innerHTML = "Day " + day + " of " + totalDays + " — saved <strong>" +
+        rm(Math.round((state.goal.target - total()) * frac * 100) / 100) +
+        "</strong> more, <strong>" + rm(state.goal.target - total() - (state.goal.target - total()) * frac) +
+        "</strong> to go! 🪙";
+    }
+  }
+
+  function startWalking() {
+    if (walkTimer || totalDays === 0) return;
+    if (walkDay >= totalDays) walkDay = 0;
+    $("btnWalk").textContent = "⏸️ Pause";
+    walkTimer = setInterval(function () {
+      var next = walkDay + 1;
+      updateWalk(next);
+      if (next >= totalDays) { stopWalking(); }
+    }, 120);
+  }
+  function stopWalking() {
+    if (walkTimer) { clearInterval(walkTimer); walkTimer = null; }
+    $("btnWalk").textContent = "▶️ Start Walking";
+  }
+
+  $("btnWalk").addEventListener("click", function () {
+    if (walkTimer) stopWalking(); else startWalking();
+  });
+  $("walkSlider").addEventListener("input", function () {
+    stopWalking();
+    updateWalk(parseInt(this.value, 10) || 0);
+  });
+  $("btnRoadmap").addEventListener("click", buildRoadmap);
+  $("btnCloseRoadmap").addEventListener("click", function () {
+    stopWalking();
+    $("roadmap").hidden = true;
+  });
+
+  $("btnAdd").addEventListener("click", function () {    var amount = parseFloat($("addAmount").value);
+    var label = $("addLabel").value.trim() || "Pocket money";
+    if (!amount || amount <= 0) { flash("addMsg", "Please enter an amount to add! 🪙", false); return; }
+    var d = new Date();
+    var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    state.entries.push({
+      label: label,
+      amount: amount,
+      date: d.getDate() + " " + months[d.getMonth()]
+    });
+    $("addAmount").value = "";
+    $("addLabel").value = "";
+    renderProgress();
+    renderPlan();
+    flash("addMsg", "+" + rm(amount) + " added! 🎉", true);
+  });
+
+  // Initial render so the app never opens blank
+  renderGoal();
+  renderProgress();
+})();
+</script>
+</body>
+</html>
